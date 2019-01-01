@@ -1,0 +1,89 @@
+---
+title: "Sike Data Challenge"
+author: "Raghava Govil"
+date: "10/26/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message = FALSE}
+library(readr)
+library(dplyr)
+library(lubridate)
+library(DT)
+```
+
+```{r message = FALSE}
+#Importing the Data
+data <- read_csv("Crime_Data_from_2010_to_Present.csv")
+#Making a separate Dataframe for data pertaining to West LA
+data2 <- as.data.frame(data[data$`Area Name`=="West LA",])
+```
+
+```{r}
+#Number of crimes in different parts of LA
+datatable(as.data.frame(table(data$`Area Name`) %>% sort()))
+```
+
+###All the following insights have been made using data pertaining only to West LA
+
+```{r message = FALSE}
+#Number of Different type of Crimes in West LA
+datatable(as.data.frame((table(data2$`Crime Code Description`) %>% sort(decreasing = TRUE))))
+```
+
+```{r message = FALSE}
+#Number of Crimes per Age group
+#data2 = as.data.frame(data2)
+sum(table(data2[which(data2[, 11] %in% c(0:18)), 9])) #0-18
+sum(table(data2[which(data2[, 11] %in% c(19:30)), 9])) #19-30
+sum(table(data2[which(data2[, 11] %in% c(31:50)), 9])) #31-50
+sum(table(data2[which(data2[, 11] %in% c(51:99)), 9])) #50+
+```
+
+```{r message = FALSE}
+data2$`Date Occurred` <- as.Date(data2$`Date Occurred`, format = "%m/%d/%Y")
+data2$DOW <- wday(data2$`Date Occurred`) 
+data2$month <- month(data2$`Date Occurred`) 
+data2$year <- year(data2$`Date Occurred`)
+data2$`Time Occurred` <- (as.numeric(data2$`Time Occurred`) %/% 100)
+data2$`Time Occurred` <- as.character(data2$`Time Occurred`)
+```
+
+```{r message = FALSE}
+#Number of Crimes occured at different times of the day
+datatable(as.data.frame(table(data2$`Time Occurred`)))
+```
+
+```{r}
+#Number of crimes per year
+barplot(table(data2$year), main = "Number of Crimes in West LA per year", col = "black", xlab = "Year", ylim = c(0, 10000), ylab = "Number of Crimes")
+```
+
+```{r}
+#Number of crimes affecting men and women
+table(data2$`Victim Sex`)
+```
+
+```{r}
+#Crime by premise Description
+datatable(as.data.frame(table(data2$`Premise Description`) %>% sort(decreasing = TRUE)))
+```
+
+```{r}
+#Burglary by premise description
+datatable(as.data.frame(table(data2$`Premise Description`[data2$`Crime Code Description`=="BURGLARY"]) %>% sort(decreasing = TRUE)))
+```
+
+###Insights from the data:
+####1. West LA seems to have the 4th lowest number of crimes in LA, making it relatively safe  
+####2. Burglary is the most common crime in West LA  
+####3. The age group 31-50 is the most affected by crime in West LA  
+####4. Surprisingly, the maximum number of crimes occur at around 12 noon  
+####5. There is no particular trend in the number of crimes over the years, but there has been a continuous drop in the number of crimes from 2015 to 2018  
+####6. Males and females are affected almost equally, with males in the lead by a margin  
+####7. Most of the crimes take place in Single Family Dwellings  
+####8. Most of the burglaries too take place mostly in Single Family Dwellings  
